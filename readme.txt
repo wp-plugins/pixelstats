@@ -25,7 +25,6 @@ Feature details:
 * Define where views are tracked (front page, single page, archive pages, RSS feeds)
 * Define if logged in users should be tracked.
 * Aggregate statistic data to optimize performance (automatically per cron or manually in Wordpress backend). (Not implemented yet)
-* Basic anti-spoofing mechanisms (e.g. referer check)
 * Identify recurring users per pseudonym, stored in browser cookie.
 * View stats in Wordpress backend. Top 10 (or Top n) articles, based on unique or total views, Bar chart for Top n articles (including unique and total views), line chart with daily totals of unique article views, total article views and unique viewers.
 * Dashboard widget with quick overview chart
