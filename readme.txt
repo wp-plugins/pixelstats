@@ -33,7 +33,6 @@ Feature details:
 See more at http://www.arrogant.de/pixelstats
 
 
-
 == Installation ==
 
 1. Download pixelstats
