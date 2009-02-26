@@ -30,6 +30,8 @@ Feature details:
 * View stats in Wordpress backend. Top 10 (or Top n) articles, based on unique or total views, Bar chart for Top n articles (including unique and total views), line chart with daily totals of unique article views, total article views and unique viewers.
 * Dashboard widget with quick overview chart
 
+See more at http://www.arrogant.de/pixelstats
+
 
 
 == Installation ==
