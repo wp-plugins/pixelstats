@@ -40,5 +40,5 @@ See more at http://www.arrogant.de/pixelstats
 
 To show off your Stats add the following code to your Wordpress Template code:
 
-* Unique views: `<?php get_pixelstats(); ?>`
-* Total views: `<?php get_pixelstats(false); ?>`
+* Unique views: `<?php print(get_pixelstats()); ?>`
+* Total views: `<?php print(get_pixelstats(false)); ?>`
