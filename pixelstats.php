@@ -615,8 +615,12 @@ if (! class_exists('PixelstatsPlugin')) {
 			$all_tracked_ids;
 			$result = $wpdb->get_results("select distinct(stat_post_id) from ".$wpdb->prefix."pixelstats", ARRAY_N);
 
-			foreach ($result as $r) {
-				$all_tracked_ids[] = $r[0];
+			if(is_array($result)) {
+				foreach ($result as $r) {
+					$all_tracked_ids[] = $r[0];
+				}
+			} else {
+				return array();
 			}
 			
 			return $all_tracked_ids;
