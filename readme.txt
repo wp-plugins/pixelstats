@@ -36,5 +36,9 @@ See more at http://www.arrogant.de/pixelstats
 
 1. Download pixelstats
 1. Upload `pixelstats/` to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
+1. Activate the plugin through the 'Plugins' menu in WordPress
 
+To show off your Stats add the following code to your Wordpress Template code:
+
+* Unique views: `<?php get_pixelstats(); ?>`
+* Total views: `<?php get_pixelstats(false); ?>`

@@ -59,7 +59,7 @@ if (! class_exists('PixelstatsPlugin')) {
 			    (is_feed()     and $conditionals['is_feed'])) and 
 				((is_user_logged_in() and get_option('pixelstats_count_logged_in')) or
 				!is_user_logged_in()))
-			$content .= "<img src=\"".WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/trackingpixel.php?post_id=".$post->ID."&ts=".time()."\" style=\"display:none;\"/>";
+			$content .= "<img src=\"".WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/trackingpixel.php?post_id=".$post->ID."&ts=".time()."\" style=\"display:none;\" alt=\"pixelstats trackingpixel\"/>";
 
 			return $content;
 		}
@@ -559,7 +559,6 @@ if (! class_exists('PixelstatsPlugin')) {
 		?>
 		<div class="wrap">
 		  <h2>pixelstats options</h2>
-		  <p>These settings are needed for data aggregation.</p>
 		  <form method="post">
 		    <input type="hidden" name="action" value="update" />
 			<fieldset id="pixelstats_display_conditionals">
@@ -577,6 +576,7 @@ if (! class_exists('PixelstatsPlugin')) {
 			<input type="checkbox" name="pixelstats_count_logged_in" <?php echo get_option("pixelstats_count_logged_in") ? ' checked="checked"' : ''; ?> />&nbsp;Count logged in users
 			</fieldset>
 			<br/>
+		    <p>These settings are needed for data aggregation. <strong>(Not implemented yet)</strong></p>
 			<table class="form-table">
 				<tr valign="top">
 			        <th scope="row"><label for="pixelstats_keep_detail_days">Keep tracking details for <i>n</i> days</label></th>
