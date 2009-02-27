@@ -559,9 +559,24 @@ if (! class_exists('PixelstatsPlugin')) {
 		?>
 		<div class="wrap">
 		  <h2>pixelstats options</h2>
-		  <!-- p>These settings are needed for data aggregation.</p>
+		  <p>These settings are needed for data aggregation.</p>
 		  <form method="post">
 		    <input type="hidden" name="action" value="update" />
+			<fieldset id="pixelstats_display_conditionals">
+			<p>Define where tracker pixel is shown.</p>
+
+			<ul style="list-style-type: none">
+				<li><input type="checkbox" name="conditionals[is_home]"<?php echo ($conditionals['is_home']) ? ' checked="checked"' : ''; ?> />&nbsp;Front page</li>
+				<li><input type="checkbox" name="conditionals[is_single]"<?php echo ($conditionals['is_single']) ? ' checked="checked"' : ''; ?> />&nbsp;Single post</li>
+				<li><input type="checkbox" name="conditionals[is_page]"<?php echo ($conditionals['is_page']) ? ' checked="checked"' : ''; ?> />&nbsp;Single page</li>
+				<li><input type="checkbox" name="conditionals[is_feed]"<?php echo ($conditionals['is_feed']) ? ' checked="checked"' : ''; ?> />&nbsp;Feeds</li>
+			</ul>
+			</fieldset><br />
+			<fieldset id="pixelstats_count_logged_in">
+			<p>If you don't want to count hits from logged in users (editors, admins etc.), it might be useful to uncheck this box. If most of you users are logged in (as subscribers), you better leave it checked.</p>
+			<input type="checkbox" name="pixelstats_count_logged_in" <?php echo get_option("pixelstats_count_logged_in") ? ' checked="checked"' : ''; ?> />&nbsp;Count logged in users
+			</fieldset>
+			<br/>
 			<table class="form-table">
 				<tr valign="top">
 			        <th scope="row"><label for="pixelstats_keep_detail_days">Keep tracking details for <i>n</i> days</label></th>
@@ -583,21 +598,6 @@ if (! class_exists('PixelstatsPlugin')) {
 				</tr>
 				
 			</table>
-			<br //-->
-			<fieldset id="pixelstats_display_conditionals">
-			<p>Define where tracker pixel is shown.</p>
-
-			<ul style="list-style-type: none">
-				<li><input type="checkbox" name="conditionals[is_home]"<?php echo ($conditionals['is_home']) ? ' checked="checked"' : ''; ?> />&nbsp;Front page</li>
-				<li><input type="checkbox" name="conditionals[is_single]"<?php echo ($conditionals['is_single']) ? ' checked="checked"' : ''; ?> />&nbsp;Single post</li>
-				<li><input type="checkbox" name="conditionals[is_page]"<?php echo ($conditionals['is_page']) ? ' checked="checked"' : ''; ?> />&nbsp;Single page</li>
-				<li><input type="checkbox" name="conditionals[is_feed]"<?php echo ($conditionals['is_feed']) ? ' checked="checked"' : ''; ?> />&nbsp;Feeds</li>
-			</ul>
-			</fieldset><br />
-			<fieldset id="pixelstats_count_logged_in">
-			<p>If you don't want to count hits from logged in users (editors, admins etc.), it might be useful to uncheck this box. If most of you users are logged in (as subscribers), you better leave it checked.</p>
-			<input type="checkbox" name="pixelstats_count_logged_in" <?php echo get_option("pixelstats_count_logged_in") ? ' checked="checked"' : ''; ?> />&nbsp;Count logged in users
-			</fieldset>
 			<p class="submit">
 		      <input type="submit" name="update" value="Save Changes" />&nbsp;<input type="submit" name="restore" value="Restore defaults" />
 		    </p>
