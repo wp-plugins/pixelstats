@@ -16,7 +16,7 @@ Count every view just once: pixelstats can distinguish between recurring and non
 
 Show off your stats: You can display you view count for each article on your blog.
 
-Analyse your statistics: pixelstats offers comfortable analyzation tools, including graphs, dashboard widget etc.
+Analyze your statistics: pixelstats offers comfortable analyzation tools, including graphs, dashboard widget etc.
 
 Feature details:
 
