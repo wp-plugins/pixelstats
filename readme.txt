@@ -10,7 +10,10 @@ Tracks views of all individual articles, even if viewed on front page, category 
 
 == Description ==
 
-Count every viewer and every page impression for each blog entry, no matter how and where it is read: pixelstats tracks views of each blog post or page, not only on a single article page but also on each other page where the complete article is shown, i.e. the blog front page, category pages, search result page, archive pages and even RSS feeds.
+Count every viewer and every article view for each blog entry, no matter how and where it is read: pixelstats tracks views of each blog post or page, not only on a single article page but also on each other page where the complete article is shown, i.e. the blog front page, category pages, search result page, archive pages and even RSS feeds.
+
+Normal statistic tools count visitors and page impressions per actual page or URL, i.e. an article view is only counted, when your visitor clicks on the article's permalink. This doesn't make sense for blogs, because many of your visitors read articles on your blog's front page or in full content RSS feeds.
+This plugin does not supply endless features to analyze your visitor's behavior, it just gives you an accurate impression, which of your articles is viewed how many times.
 
 Count every view just once: pixelstats can distinguish between recurring and non-recurring views per (anonymous) user to compute a unique or total view count per post/page.
 
@@ -20,7 +23,7 @@ Analyze your statistics: pixelstats offers comfortable analyzation tools, includ
 
 Feature details:
 
-* Count viewers and page impressions for each post and article using tracking pixel
+* Count viewers and article views for each post and article using tracking pixel
 * Tracking pixel is displayed automatically, no theme customization needed.
 * Define where views are tracked (front page, single page, archive pages, RSS feeds)
 * Define if logged in users should be tracked.
