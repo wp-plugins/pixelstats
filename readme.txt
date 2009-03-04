@@ -42,3 +42,5 @@ To show off your Stats add the following code to your Wordpress Template code:
 
 * Unique views: `<?php print(get_pixelstats()); ?>`
 * Total views: `<?php print(get_pixelstats(false)); ?>`
+
+After update, please deactivate and activate plugin to make sure all database settings are up to date.
