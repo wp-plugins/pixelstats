@@ -4,7 +4,7 @@ Plugin Name: pixelstats
 Plugin URI: http://www.arrogant.de/pixelstats/
 Description: Generates statistics about article views for each post using counter pixel.
 Author: Timo Fuchs <pixelstats@arrogant.de>
-Version: 0.7.1
+Version: 0.7.2 devel
 Author URI: http://www.arrogant.de
 License: GPLv3
 */
@@ -108,13 +108,25 @@ if (! class_exists('PixelstatsPlugin')) {
 		function _assert_db_structure() {
 			global $wpdb;
 			
-			$wpdb->query("CREATE TABLE IF NOT EXISTS ".$wpdb->prefix."pixelstats ( `stat_post_id` int NOT NULL default '0', `stat_date` datetime NOT NULL default '0000-00-00 00:00:00' , `stat_visitor_id` VARCHAR( 32 ) NULL ) ENGINE = MYISAM");
+			$wpdb->query("CREATE TABLE IF NOT EXISTS ".$wpdb->prefix."pixelstats ( `stat_post_id` int NOT NULL default '0', `stat_date` datetime NOT NULL default '0000-00-00 00:00:00' , `stat_visitor_id` VARCHAR( 32 ) NULL , INDEX ".$wpdb->prefix."pixelstats_post_ids (stat_post_id,stat_date)) ENGINE = MYISAM");
 			
-			 $wpdb->query("CREATE TABLE IF NOT EXISTS ".$wpdb->prefix."pixelstats_daily (`stat_post_id` INT NOT NULL DEFAULT '0', `day` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00', `unique_visits` INT NOT NULL DEFAULT '0', `total_visits` INT NOT NULL DEFAULT '0') ENGINE = MYISAM");
+			 $wpdb->query("CREATE TABLE IF NOT EXISTS ".$wpdb->prefix."pixelstats_daily (`stat_post_id` INT NOT NULL DEFAULT '0', `day` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00', `unique_visits` INT NOT NULL DEFAULT '0', `total_visits` INT NOT NULL DEFAULT '0', INDEX ".$wpdb->prefix."pixelstats_daily_post_ids (stat_post_id,day) ) ENGINE = MYISAM");
 			
 			$wpdb->query("CREATE TABLE IF NOT EXISTS ".$wpdb->prefix."pixelstats_total (`stat_post_id` INT NOT NULL DEFAULT '0', `until_day` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00', `unique_visits` INT NOT NULL DEFAULT '0', `total_visits` INT NOT NULL DEFAULT '0') ENGINE = MYISAM");
+			
+			// If indexes dont exist after update
+			$result = $wpdb->get_results("show index from ".$wpdb->prefix."pixelstats where key_name='".$wpdb->prefix."pixelstats_post_ids'", ARRAY_N);
+			if (count($result) == 0) {
+				$wpdb->query("CREATE INDEX ".$wpdb->prefix."pixelstats_post_ids on ".$wpdb->prefix."pixelstats (stat_post_id,stat_date);");
+			}
+
+			$result = $wpdb->get_results("show index from ".$wpdb->prefix."pixelstats_daily where key_name='".$wpdb->prefix."pixelstats_daily_post_ids'", ARRAY_N);
+			if (count($result) == 0) {
+				$wpdb->query("CREATE INDEX ".$wpdb->prefix."pixelstats_daily_post_ids on ".$wpdb->prefix."pixelstats_daily (stat_post_id,day);");
+			}
 				
 		}
+		
 		
 		/*
 		 * Make sure options are set, if not, set default values
@@ -232,7 +244,7 @@ if (! class_exists('PixelstatsPlugin')) {
 				<input type="hidden" name="pixelstats_page" value="<?php echo $_REQUEST['pixelstats_page']; ?>"/>
 				<input type="hidden" name="sortby" value="<?php echo $_REQUEST['sortby']; ?>"/>
 				<table class="widefat form-table" cellspacing="0" style="width: 800px;">
-					<tr valign="top" class="alternate">
+					<tr valign="top">
 				        <td class='row-title' width="150px;">Limit output to top <i>n</i> articles</td>
 				        <td>
 							<select name="pixelstats_top_limit">
@@ -243,7 +255,7 @@ if (! class_exists('PixelstatsPlugin')) {
 							</select>
 						</td>
 					</tr>
-					<tr valign="top">
+					<tr valign="top" class="alternate">
 				        <td class='row-title' width="150px;">Sort by</td>
 				        <td>
 							<select name="sortby">
@@ -385,7 +397,7 @@ if (! class_exists('PixelstatsPlugin')) {
 					</select>
 				</td>
 			</tr>
-			<tr class="alternate">
+			<tr>
 				<td class='row-title' style="width:150px;">Choose end</td>
 				<td class='desc'>
 					<select name="period_end_year">
