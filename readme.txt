@@ -1,6 +1,6 @@
 === Plugin Name ===
 Contributors: pixelstats
-Tags: plugin, statistics, tracking
+Tags: plugin, statistics, stats, tracking
 Donate link: http://www.arrogant.de/pixelstats/
 Requires at least: 2.7
 Tested up to: 2.7.1
@@ -47,3 +47,14 @@ To show off your Stats add the following code to your Wordpress Template code:
 * Total views: `<?php print(get_pixelstats(false)); ?>`
 
 After update, please deactivate and activate plugin to make sure all database settings are up to date.
+
+== Screenshots ==
+
+1. Quick overview
+2. Top articles overview
+3. Dashboard Widget
+4. Top articles details page
+5. Select your time period
+6. Access detailed stats for each post or page via link in post overview
+7. Stats details for individual page
+8. Total numbers details

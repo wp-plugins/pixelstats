@@ -4,7 +4,7 @@ Plugin Name: pixelstats
 Plugin URI: http://www.arrogant.de/pixelstats/
 Description: Generates statistics about article views for each post using counter pixel.
 Author: Timo Fuchs <pixelstats@arrogant.de>
-Version: 0.7.3
+Version: 0.8
 Author URI: http://www.arrogant.de
 License: GPLv3
 */
@@ -28,10 +28,15 @@ if (! class_exists('PixelstatsPlugin')) {
 			}
 			add_action('admin_menu', array(&$this, 'add_pixelstats_admin_page'));
 			add_action('admin_menu', array(&$this, 'add_pixelstats_options_page'));
+			add_action('admin_head', array(&$this, 'pixelstats_css'));
 			add_filter('init', array(&$this, 'pixelstats_set_visitor_id'));
 			add_filter('the_content', array(&$this, 'pixelstats_display_hook'));
 			add_filter('the_content_rss', array(&$this, 'pixelstats_display_hook'));
 			add_action('wp_dashboard_setup', array(&$this, 'pixelstats_dashboard_setup')); 
+			add_filter('manage_posts_columns', array(&$this, 'pixelstats_manage_post_add_column'));
+			add_action('manage_posts_custom_column', array(&$this, 'pixelstats_manage_post_show_link'), 5, 2);
+			add_filter('manage_pages_columns', array(&$this, 'pixelstats_manage_post_add_column'));
+			add_action('manage_pages_custom_column', array(&$this, 'pixelstats_manage_post_show_link'), 5, 2);
 			
 			$this->_assert_options();
 		}
@@ -45,6 +50,36 @@ if (! class_exists('PixelstatsPlugin')) {
 		 */
 		function pixelstats_dashboard_setup() {
 			wp_add_dashboard_widget( 'pixelstats_widget', __( 'pixelstats' ), 'pixelstats_widget' );
+		}
+		
+		/*
+		 * Add CSS
+		 */
+		function pixelstats_css() {
+			?><style type="text/css">table.widefat th.column-pixelstats { width: 80px;}</style><?php
+		}
+		
+		/*
+		 * Add custom column in post list
+		 */
+		function pixelstats_manage_post_add_column( $defaults ) {
+			$defaults['pixelstats'] = 'Pixelstats';
+			return $defaults;
+		}
+		
+		/*
+		 * Show link in custom column
+		 */
+		function pixelstats_manage_post_show_link( $column_name, $id) {
+			if( $column_name == 'pixelstats' ) {
+				?>
+				<form action="index.php?page=pixelstats" method="post" name="pixelstats_dummy" ></form>
+				<form action="index.php?page=pixelstats" method="post" name="pixelstats_details_<?php echo $id; ?>" id="pixelstats_details_<?php echo $id; ?>">
+					<input type="hidden" name="pixelstats_page" value="views_single"/><input type="hidden" name="post_id" value="<?php echo $id; ?>"/>
+				</form>
+				<a href="javascript:void(0);" onclick="document.getElementById('pixelstats_details_<?php echo $id; ?>').submit();">Show stats</a></td>
+				<?php
+		    }
 		}
 		/*
 		 * Display the tracking pixel
@@ -184,7 +219,7 @@ if (! class_exists('PixelstatsPlugin')) {
 					$this->_display_views_extended_page();
 					break;
 				case "views_single";
-					$this->_display_views_single_page();
+					$this->_display_views_single_page($_REQUEST['post_id']);
 					break;
 				default:
 					$this->_display_analysis_overview();
@@ -198,13 +233,61 @@ if (! class_exists('PixelstatsPlugin')) {
 		 * Extended views page
 		 */
 		function _display_views_extended_page() {
+			?>
+			<p><a href="?page=pixelstats" class="button">Back to overview</a><br /><br /></p>
+			<?php
+			// check if period is set
+			$view_mode = "";
+			$view_period = array();
+			if(isset($_REQUEST['monthly_year']) &&
+				isset($_REQUEST['monthly_month'])) {
 			
-		}
-		
-		/*
-		 * Single post views page
-		 */
-		function _display_views_single_page() {
+				$view_mode = "monthly";
+				$last_day = date('Y-m-d',(strtotime('next month',strtotime(date($_REQUEST['monthly_month'].'/01/'.$_REQUEST['monthly_year']))) - 1)); 
+				$first_day = $_REQUEST['monthly_year']."-".$_REQUEST['monthly_month']."-01";
+				$num_days = ceil((strtotime($last_day) - strtotime($first_day)) / 86400);
+				$view_period = array($_REQUEST['monthly_year']."-".$_REQUEST['monthly_month']);		
+			}
+			if(isset($_REQUEST['period_start_year']) &&
+				isset($_REQUEST['period_start_month']) &&
+				isset($_REQUEST['period_start_day']) &&
+				isset($_REQUEST['period_end_year']) &&
+				isset($_REQUEST['period_end_month']) &&
+				isset($_REQUEST['period_end_day'])) {
+					$view_mode = "period";
+					$view_period = array($_REQUEST['period_start_year']."-".$_REQUEST['period_start_month']."-".$_REQUEST['period_start_day'], $_REQUEST['period_end_year']."-".$_REQUEST['period_end_month']."-".$_REQUEST['period_end_day']);
+					$first_day = $_REQUEST['period_start_year']."-".$_REQUEST['period_start_month']."-".$_REQUEST['period_start_day'];
+					$last_day = $_REQUEST['period_end_year']."-".$_REQUEST['period_end_month']."-".$_REQUEST['period_end_day'];
+					$num_days = ceil((strtotime($last_day) - strtotime($first_day)) / 86400);
+			}
+			if(empty($last_day) || empty($num_days)) {
+				$last_day = date("Y-m-d");
+				$num_days = 14;
+			}
+			?>
+			<form method="post">
+				<input type="hidden" name="pixelstats_page" value="<?php echo $_REQUEST['pixelstats_page']; ?>"/>
+				<table class="widefat form-table" cellspacing="0" style="width: 800px;">
+					<?php 
+					if(isset($_REQUEST['monthly_chooser']) || ( isset($_REQUEST['monthly_year']) && isset($_REQUEST['submit']) )) $this->_display_monthly_chooser();
+					if(isset($_REQUEST['period_chooser']) || ( isset($_REQUEST['period_start_year']) && isset($_REQUEST['submit']))) $this->_display_period_chooser();
+					?>
+
+				</table>
+				<p class="submit">
+					<input type="submit" name="submit" class="button-primary" value="Submit"/>&nbsp;
+					<input type="submit" name="monthly_chooser" value="Stats per month"/>&nbsp;
+					<input type="submit" name="period_chooser" value="Stats per time period"/>
+				</p>
+			</form>
+			<p><?php if (!isset($_GET['page'])) echo "<a href=\"?page=pixelstats\">"; ?>
+			<?php 
+			$data = $this->_collect_visits_chart_data($num_days, strtotime($last_day));
+			print($this->_get_chart_img_tag("lc", $data[0], $data[1], array("Total views", "Unique views", "Unique visitors"), "800x200"));
+
+			?>
+			<?php if (!isset($_GET['page'])) echo "</a>"; ?></p>
+			<?php
 			
 		}
 		
@@ -215,12 +298,17 @@ if (! class_exists('PixelstatsPlugin')) {
 		function _display_analysis_overview() {
 			?>
 			<h3>Article views per day</h3>
+			<form method="post">
+			<p class="submit">
+				<input type="hidden" name="pixelstats_page" value="views_extended" /><input type="submit" name="submit" value="Details"/>
+			</p>
+			</form>
 			<?php $this->_display_views_per_day(); ?>
 			<br /><hr /><br />
 			<h3>Top articles</h3>
 			<form method="post">
 			<p class="submit">
-				<input type="hidden" name="pixelstats_page" value="top_extended" /><input type="submit" name="submit" value="Details page"/>
+				<input type="hidden" name="pixelstats_page" value="top_extended" /><input type="submit" name="submit" value="Details"/>
 			</p>
 			</form>
 			<p>
@@ -228,6 +316,8 @@ if (! class_exists('PixelstatsPlugin')) {
 			</p>
 			<?php
 		}
+		
+
 		
 		/*
 		 * Display extended top page
@@ -239,6 +329,7 @@ if (! class_exists('PixelstatsPlugin')) {
 				$limit = 10;
 			}
 			?>
+			<p><a href="?page=pixelstats" class="button">Back to overview</a><br /><br /></p>
 			<h3>Top articles</h3>
 			<form method="post">
 				<input type="hidden" name="pixelstats_page" value="<?php echo $_REQUEST['pixelstats_page']; ?>"/>
@@ -509,8 +600,6 @@ if (! class_exists('PixelstatsPlugin')) {
 		 * Display article views per day
 		 */
 		function _display_views_per_day($width=800, $num_days=7, $last_day="") {
-			?>
-			<?php
 			if (isset($_REQUEST['last_day'])) {
 				if(isset($_REQUEST['change_week_prev'])) $last_day = date("Y-m-d", strtotime("-1 week", strtotime($_REQUEST['last_day'])));
 				if(isset($_REQUEST['change_week_curr'])) $last_day = date("Y-m-d");
@@ -519,7 +608,7 @@ if (! class_exists('PixelstatsPlugin')) {
 			} else {
 				if (empty($last_day)) {
 					$last_day = date("Y-m-d");
-					echo "<p>Showing last $num_days days.<br /><br /></p>";
+					echo "<p>Showing last $num_days days.</p>";
 				} else {
 					echo "<p>Showing $num_days days until ".$last_day.".</p>";
 				}
@@ -532,6 +621,69 @@ if (! class_exists('PixelstatsPlugin')) {
 			<?php 
 			$data = $this->_collect_visits_chart_data($num_days, strtotime($last_day));
 			print($this->_get_chart_img_tag("lc", $data[0], $data[1], array("Total views", "Unique views", "Unique visitors"), $width."x200"));
+
+			?>
+			<?php if (!isset($_GET['page'])) echo "</a>"; ?></p>
+			<?php
+		}
+		
+		/*
+		 * Display article views per day and article
+		 */
+		function _display_views_single_page($post_id, $num_days=14, $last_day="") {
+			?>
+			<p><a href="?page=pixelstats" class="button">Back to overview</a><br /><br /></p>
+			<?php
+			// check if period is set
+			$view_mode = "";
+			$view_period = array();
+			if(isset($_REQUEST['monthly_year']) &&
+				isset($_REQUEST['monthly_month'])) {
+			
+				$view_mode = "monthly";
+				$last_day = date('Y-m-d',(strtotime('next month',strtotime(date($_REQUEST['monthly_month'].'/01/'.$_REQUEST['monthly_year']))) - 1)); 
+				$first_day = $_REQUEST['monthly_year']."-".$_REQUEST['monthly_month']."-01";
+				$num_days = ceil((strtotime($last_day) - strtotime($first_day)) / 86400);
+				$view_period = array($_REQUEST['monthly_year']."-".$_REQUEST['monthly_month']);		
+			}
+			if(isset($_REQUEST['period_start_year']) &&
+				isset($_REQUEST['period_start_month']) &&
+				isset($_REQUEST['period_start_day']) &&
+				isset($_REQUEST['period_end_year']) &&
+				isset($_REQUEST['period_end_month']) &&
+				isset($_REQUEST['period_end_day'])) {
+					$view_mode = "period";
+					$view_period = array($_REQUEST['period_start_year']."-".$_REQUEST['period_start_month']."-".$_REQUEST['period_start_day'], $_REQUEST['period_end_year']."-".$_REQUEST['period_end_month']."-".$_REQUEST['period_end_day']);
+					$first_day = $_REQUEST['period_start_year']."-".$_REQUEST['period_start_month']."-".$_REQUEST['period_start_day'];
+					$last_day = $_REQUEST['period_end_year']."-".$_REQUEST['period_end_month']."-".$_REQUEST['period_end_day'];
+					$num_days = ceil((strtotime($last_day) - strtotime($first_day)) / 86400);
+			}
+			
+			$this_post = get_post($post_id);
+			$title = $this_post->post_title;
+			$link = get_permalink($post_id);
+			echo "<p>Showing stats for <a href=\"".$link."\">".$title."</a></p>";
+			?>
+			<form method="post">
+				<input type="hidden" name="pixelstats_page" value="<?php echo $_REQUEST['pixelstats_page']; ?>"/>
+				<input type="hidden" name="post_id" value="<?php echo $_REQUEST['post_id']; ?>"/>
+				<table class="widefat form-table" cellspacing="0" style="width: 800px;">
+					<?php 
+					if(isset($_REQUEST['monthly_chooser']) || ( isset($_REQUEST['monthly_year']) && isset($_REQUEST['submit']) )) $this->_display_monthly_chooser();
+					if(isset($_REQUEST['period_chooser']) || ( isset($_REQUEST['period_start_year']) && isset($_REQUEST['submit']))) $this->_display_period_chooser();
+					?>
+
+				</table>
+				<p class="submit">
+					<input type="submit" name="submit" class="button-primary" value="Submit"/>&nbsp;
+					<input type="submit" name="monthly_chooser" value="Stats per month"/>&nbsp;
+					<input type="submit" name="period_chooser" value="Stats per time period"/>
+				</p>
+			</form>
+			<p><?php if (!isset($_GET['page'])) echo "<a href=\"?page=pixelstats\">"; ?>
+			<?php 
+			$data = $this->_collect_post_visits_chart_data($post_id, $num_days, strtotime($last_day));
+			print($this->_get_chart_img_tag("lc", $data[0], $data[1], array("Total views", "Unique views"), "800x200"));
 
 			?>
 			<?php if (!isset($_GET['page'])) echo "</a>"; ?></p>
@@ -732,7 +884,7 @@ if (! class_exists('PixelstatsPlugin')) {
 					isset($_REQUEST['period_end_day'])) {
 						$view_mode = "period";
 						$view_period = array($_REQUEST['period_start_year']."-".$_REQUEST['period_start_month']."-".$_REQUEST['period_start_day'], $_REQUEST['period_end_year']."-".$_REQUEST['period_end_month']."-".$_REQUEST['period_end_day']);
-					}
+				}
 			}
 			
 			
@@ -800,6 +952,7 @@ if (! class_exists('PixelstatsPlugin')) {
 						<th scope="col">Post</th>
 						<th scope="col"><!-- a title="Sort result by unique article views" href="javascript:void(0);" onclick="document.forms['sortby_unique'].submit();"-->Unique views<!--/a--></th>
 						<th scope="col"><!--a title="Sort result by total views" href="javascript:void(0);" onclick="document.forms['sortby_total'].submit();"-->Total views<!--/a--></th>
+						<th scope="col">&nbsp;</th>
 					</tr>
 					</thead>
 
@@ -808,6 +961,7 @@ if (! class_exists('PixelstatsPlugin')) {
 						<th scope="col">Post</th>
 						<th scope="col"><!-- a title="Sort result by unique article views" href="javascript:void(0);" onclick="document.forms['sortby_unique'].submit();"-->Unique views<!--/a--></th>
 						<th scope="col"><!--a title="Sort result by total views" href="javascript:void(0);" onclick="document.forms['sortby_total'].submit();"-->Total views<!--/a--></th>
+						<th scope="col">&nbsp;</th>
 					</tr>
 					</tfoot>
 					<tbody>
@@ -816,7 +970,13 @@ if (! class_exists('PixelstatsPlugin')) {
 					$this_post = get_post($r[0]);
 					$title = $this_post->post_title;
 					$link = get_permalink($r[0]);
-					echo "<tr><td><a href=\"".$link."\">".$title."</a></td><td style=\"width:100px;\">".$r[1]."</td><td style=\"width:100px;\">".$r[2]."</td></tr>";
+					echo "<tr><td><a href=\"".$link."\">".$title."</a></td><td style=\"width:100px;\">".$r[1]."</td><td style=\"width:100px;\">".$r[2]."</td>";
+					?>
+					<td><form method="post" name="views_single_<?php echo $r[0]; ?>">
+						<input type="hidden" name="pixelstats_page" value="views_single"/><input type="hidden" name="post_id" value="<?php echo $r[0]; ?>"/>
+					</form><a href="javascript:void(0);" onclick="document.forms['views_single_<?php echo $r[0]; ?>'].submit();">Show details</a></td>
+					<?php
+					echo "</tr>";
 				}
 				?>	
 					</tbody>
@@ -825,6 +985,48 @@ if (! class_exists('PixelstatsPlugin')) {
 			} else {
 				return "No results yet.";
 			}
+		}
+		
+		/*
+		 * Collect data for visits chart per post id
+		 *
+		 */
+		function _collect_post_visits_chart_data($post_id, $days_back="14", $last_day = "") {
+			global $wpdb;
+			
+			if($last_day == "") $last_day = time();
+			$days = array();
+			$short_days = array();
+			$data = array();
+			
+			$even = true;
+			if ($days_back > 14) $show_only_odd = true; else $show_only_odd = false;
+			
+			while ($days_back > 0) {
+				$days_back = $days_back - 1;
+				$date = date("Y-m-d", strtotime("-".$days_back." days", $last_day));
+				$short_date = date("m-d", strtotime("-".$days_back." days", $last_day));
+				$days[] = $date;
+				if($even && $show_only_odd) {
+					$short_days[] = "";
+				} else {
+					$short_days[] = $short_date;
+				}
+				if ($even) $even = false; else $even = true;
+			}
+			
+			$data[0] = array();
+			$data[1] = array();
+			
+			foreach ($days as $d) {
+				$total_visits = $this->_get_num_views_per_day_and_id($d, $post_id, false);
+				
+				$unique_visits = $this->_get_num_views_per_day_and_id($d, $post_id);
+				$data[0][] = $total_visits;
+				$data[1][] = $unique_visits;
+			}
+			return(array($data, $short_days));
+			
 		}
 		
 		/*
