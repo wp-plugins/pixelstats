@@ -1040,12 +1040,21 @@ if (! class_exists('PixelstatsPlugin')) {
 			$days = array();
 			$short_days = array();
 			$data = array();
+			
+			$even = true;
+			if ($days_back > 14) $show_only_odd = true; else $show_only_odd = false;
+			
 			while ($days_back > 0) {
 				$days_back = $days_back - 1;
 				$date = date("Y-m-d", strtotime("-".$days_back." days", $last_day));
 				$short_date = date("m-d", strtotime("-".$days_back." days", $last_day));
 				$days[] = $date;
-				$short_days[] = $short_date;
+				if($even && $show_only_odd) {
+					$short_days[] = "";
+				} else {
+					$short_days[] = $short_date;
+				}
+				if ($even) $even = false; else $even = true;
 			}
 			
 			$data[0] = array();
