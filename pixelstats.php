@@ -4,7 +4,7 @@ Plugin Name: pixelstats
 Plugin URI: http://www.arrogant.de/pixelstats/
 Description: Generates statistics about article views for each post using counter pixel.
 Author: Timo Fuchs <pixelstats@arrogant.de>
-Version: 0.8
+Version: 0.8.1
 Author URI: http://www.arrogant.de
 License: GPLv3
 */
@@ -73,11 +73,7 @@ if (! class_exists('PixelstatsPlugin')) {
 		function pixelstats_manage_post_show_link( $column_name, $id) {
 			if( $column_name == 'pixelstats' ) {
 				?>
-				<form action="index.php?page=pixelstats" method="post" name="pixelstats_dummy" ></form>
-				<form action="index.php?page=pixelstats" method="post" name="pixelstats_details_<?php echo $id; ?>" id="pixelstats_details_<?php echo $id; ?>">
-					<input type="hidden" name="pixelstats_page" value="views_single"/><input type="hidden" name="post_id" value="<?php echo $id; ?>"/>
-				</form>
-				<a href="javascript:void(0);" onclick="document.getElementById('pixelstats_details_<?php echo $id; ?>').submit();">Show stats</a></td>
+				<a href="index.php?page=pixelstats&pixelstats_page=views_single&post_id=<?php echo $id; ?>">Show stats</a>
 				<?php
 		    }
 		}
@@ -285,8 +281,7 @@ if (! class_exists('PixelstatsPlugin')) {
 			$data = $this->_collect_visits_chart_data($num_days, strtotime($last_day));
 			print($this->_get_chart_img_tag("lc", $data[0], $data[1], array("Total views", "Unique views", "Unique visitors"), "800x200"));
 
-			?>
-			<?php if (!isset($_GET['page'])) echo "</a>"; ?></p>
+			if (!isset($_GET['page'])) echo "</a>"; ?></p>
 			<?php
 			
 		}
@@ -664,7 +659,7 @@ if (! class_exists('PixelstatsPlugin')) {
 			$link = get_permalink($post_id);
 			echo "<p>Showing stats for <a href=\"".$link."\">".$title."</a></p>";
 			?>
-			<form method="post">
+			<form action="?page=pixelstats" method="post">
 				<input type="hidden" name="pixelstats_page" value="<?php echo $_REQUEST['pixelstats_page']; ?>"/>
 				<input type="hidden" name="post_id" value="<?php echo $_REQUEST['post_id']; ?>"/>
 				<table class="widefat form-table" cellspacing="0" style="width: 800px;">

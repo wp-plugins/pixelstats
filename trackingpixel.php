@@ -24,7 +24,6 @@ function show_pixelstats_image() {
  */
 function write_pixelstats() {
 	global $wpdb;
-	$token = substr(md5(sha1(crc32(md5(base64_decode(microtime())).microtime()))), 0, 32);
 	if (!empty($_REQUEST)) {
 		$wpdb->query("INSERT INTO ".$wpdb->prefix."pixelstats VALUES (\"".$_REQUEST['post_id']."\", now(), \"".get_visitor_id()."\")");
 	}	
@@ -45,11 +44,9 @@ function get_visitor_id() {
 	return $visitor_id;
 }
 
-// This might help a bit to keep robots away
-// Deactivated because it also keeps google readers away
-//if(isset($_SERVER['HTTP_REFERER']) && preg_match("/".$_SERVER['HTTP_HOST']."/", $_SERVER['HTTP_REFERER']) != 0) write_pixelstats();
-write_pixelstats();
-//if(isset($_SERVER['HTTP_REFERER'])) write_pixelstats();
+// Checking the referer might help a bit to keep robots away
+if(isset($_SERVER['HTTP_REFERER'])) write_pixelstats();
+//write_pixelstats();
 show_pixelstats_image();
 
 
