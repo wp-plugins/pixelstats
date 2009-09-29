@@ -4,7 +4,7 @@ Plugin Name: pixelstats
 Plugin URI: http://www.arrogant.de/pixelstats/
 Description: Generates statistics about article views for each post using counter pixel.
 Author: Timo Fuchs <pixelstats@arrogant.de>
-Version: 0.8.1
+Version: 0.8.2
 Author URI: http://www.arrogant.de
 License: GPLv3
 */
@@ -90,7 +90,7 @@ if (! class_exists('PixelstatsPlugin')) {
 			    (is_feed()     and $conditionals['is_feed'])) and 
 				((is_user_logged_in() and get_option('pixelstats_count_logged_in')) or
 				!is_user_logged_in()))
-			$content .= "<img src=\"".WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/trackingpixel.php?post_id=".$post->ID."&ts=".time()."\" style=\"display:none;\" alt=\"pixelstats trackingpixel\"/>";
+			$content .= "<img src=\"".WP_PLUGIN_URL."/".plugin_basename(dirname(__FILE__))."/trackingpixel.php?post_id=".$post->ID."&amp;ts=".time()."\" style=\"display:none;\" alt=\"pixelstats trackingpixel\"/>";
 
 			return $content;
 		}
